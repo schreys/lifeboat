@@ -2,32 +2,60 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
 <title>Lifeboat</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #2b2b2b; font-family: "Courier New", monospace; }
+  html, body { margin: 0; height: 100%; background: #2b2b2b; font-family: "Courier New", monospace; overflow: hidden; }
   body { display: flex; align-items: center; justify-content: center; }
-  .console { background: linear-gradient(#cfc8b6, #a59d88); padding: 16px 18px 14px; border-radius: 18px;
+  .console { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px 12px;
+             grid-template-areas: "title title fs" "screen screen screen" "left hint right";
+             background: linear-gradient(#cfc8b6, #a59d88); padding: 14px 18px; border-radius: 18px;
              box-shadow: 0 10px 30px #000a, inset 0 2px 0 #fff6; }
-  .title { color: #8b1d1d; font-weight: bold; font-size: 22px; letter-spacing: 6px; text-align: center; margin-bottom: 8px; }
-  canvas { display: block; width: min(92vw, 900px); height: auto; border-radius: 6px; border: 4px solid #333; background: #000; touch-action: none; }
-  .controls { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .title { grid-area: title; color: #8b1d1d; font-weight: bold; font-size: 22px; letter-spacing: 6px; text-align: center; padding-left: 40px; }
+  canvas { grid-area: screen; justify-self: center; display: block; box-sizing: border-box; height: auto;
+           width: min(calc(100vw - 52px), calc((100vh - 190px) * 1.73));
+           width: min(calc(100vw - 52px), calc((100dvh - 190px) * 1.73));
+           border-radius: 6px; border: 4px solid #333; background: #000; touch-action: none; }
+  #left { grid-area: left; } #right { grid-area: right; }
+  .fsbtn { grid-area: fs; justify-self: end; width: 40px; height: 40px; border-radius: 8px; border: none; cursor: pointer;
+           background: #4a4a4a; color: #fff; font-size: 22px; box-shadow: 0 3px 0 #222; touch-action: manipulation; }
+  .fsbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 #222; }
   .btn { width: 76px; height: 76px; border-radius: 50%; border: none; color: #fff; font-size: 30px; cursor: pointer;
          background: radial-gradient(circle at 35% 30%, #e65050, #901818); box-shadow: 0 4px 0 #500, 0 6px 10px #0008;
          user-select: none; -webkit-user-select: none; touch-action: manipulation; }
   .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #500; }
-  .hint { color: #3a3a3a; font-size: 13px; text-align: center; }
+  .hint { grid-area: hint; color: #3a3a3a; font-size: 13px; text-align: center; }
+  .rotate { display: none; }
+  @media (orientation: portrait) and (pointer: coarse) {
+    .keys { display: none; } .rotate { display: inline; font-weight: bold; }
+  }
+  @media (orientation: landscape) and (max-height: 520px) {
+    .console { grid-template-areas: "fs screen ." "left screen right"; grid-template-rows: auto 1fr; gap: 8px;
+               box-sizing: border-box; width: 100vw; height: 100vh; height: 100dvh; border-radius: 0;
+               padding: 8px max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left)); }
+    .title, .hint { display: none; }
+    .fsbtn { justify-self: center; align-self: start; }
+    .btn { width: 70px; height: 70px; }
+    canvas { width: min(calc(100vw - 185px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100vh - 20px) * 1.73));
+             width: min(calc(100vw - 185px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100dvh - 20px) * 1.73)); }
+  }
 </style>
 </head>
 <body>
 <div class="console">
   <div class="title">LIFEBOAT</div>
+  <button class="fsbtn" id="fs" title="Fullscreen (F)">&#x26F6;</button>
   <canvas id="game" width="900" height="520"></canvas>
-  <div class="controls">
-    <button class="btn" id="left">&#9664;</button>
-    <div class="hint">&larr; &rarr; / A D = varen &nbsp;&bull;&nbsp; SPATIE = start &nbsp;&bull;&nbsp; P = pauze</div>
-    <button class="btn" id="right">&#9654;</button>
+  <button class="btn" id="left">&#9664;</button>
+  <div class="hint">
+    <span class="keys">&larr; &rarr; / A D = varen &nbsp;&bull;&nbsp; SPATIE = start &nbsp;&bull;&nbsp; P = pauze &nbsp;&bull;&nbsp; F = fullscreen</span>
+    <span class="rotate">&#8635; Draai je telefoon voor een groter scherm</span>
   </div>
+  <button class="btn" id="right">&#9654;</button>
 </div>
 <script>
 const cv = document.getElementById('game'), ctx = cv.getContext('2d');
@@ -392,7 +420,25 @@ addEventListener('keydown', e => {
   else if (e.key === 'p' || e.key === 'P') {
     if (state === 'play') state = 'paused'; else if (state === 'paused') state = 'play';
   }
+  else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
 });
+
+function toggleFullscreen() {
+  const root = document.documentElement;
+  const request = root.requestFullscreen || root.webkitRequestFullscreen;
+  if (!request) {
+    alert('Fullscreen werkt niet in deze browser.\nOp iPhone: tik op Deel → "Zet op beginscherm" en start de game van daaruit.');
+    return;
+  }
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  } else {
+    Promise.resolve(request.call(root))
+      .then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape'))
+      .catch(() => {});
+  }
+}
+document.getElementById('fs').addEventListener('click', e => { e.currentTarget.blur(); toggleFullscreen(); });
 for (const [id, d] of [['left', -1], ['right', 1]]) {
   document.getElementById(id).addEventListener('pointerdown', e => {
     e.preventDefault(); audio();

@@ -1,0 +1,9 @@
+{
+  "name": "Lifeboat",
+  "short_name": "Lifeboat",
+  "start_url": ".",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#2b2b2b",
+  "theme_color": "#2b2b2b"
+}
