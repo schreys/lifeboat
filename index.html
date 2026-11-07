@@ -134,7 +134,8 @@
           font-weight: bold;
         }
       }
-      @media (orientation: landscape) and (max-height: 520px) {
+      @media (orientation: landscape) and (max-height: 520px),
+        (orientation: landscape) and (pointer: coarse) {
         .console {
           grid-template-areas: "fs screen ." "left screen right";
           grid-template-rows: auto 1fr;
@@ -1035,11 +1036,11 @@
           else action();
         });
       }
-      cv.addEventListener("pointerdown", (e) => {
+      document.addEventListener("pointerdown", (e) => {
+        if (e.target.closest("button")) return;
         audio();
         if (state !== "play") return action();
-        const r = cv.getBoundingClientRect();
-        move(e.clientX - r.left < r.width / 2 ? -1 : 1);
+        move(e.clientX < innerWidth / 2 ? -1 : 1);
       });
 
       let last = performance.now();
