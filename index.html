@@ -1,468 +1,1055 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
-<title>Lifeboat</title>
-<style>
-  html, body { margin: 0; height: 100%; background: #2b2b2b; font-family: "Courier New", monospace; overflow: hidden; }
-  * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
-  button:focus { outline: none; }
-  body { display: flex; align-items: center; justify-content: center; }
-  .console { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px 12px;
-             grid-template-areas: "title title fs" "screen screen screen" "left hint right";
-             background: linear-gradient(#cfc8b6, #a59d88); padding: 14px 18px; border-radius: 18px;
-             box-shadow: 0 10px 30px #000a, inset 0 2px 0 #fff6; }
-  .title { grid-area: title; color: #8b1d1d; font-weight: bold; font-size: 22px; letter-spacing: 6px; text-align: center; padding-left: 40px; }
-  canvas { grid-area: screen; justify-self: center; display: block; box-sizing: border-box; height: auto;
-           width: min(calc(100vw - 52px), calc((100vh - 190px) * 1.73));
-           width: min(calc(100vw - 52px), calc((100dvh - 190px) * 1.73));
-           border-radius: 6px; border: 4px solid #333; background: #000; touch-action: none; }
-  #left { grid-area: left; } #right { grid-area: right; }
-  .fsbtn { grid-area: fs; justify-self: end; width: 40px; height: 40px; border-radius: 8px; border: none; cursor: pointer;
-           background: #4a4a4a; color: #fff; font-size: 22px; box-shadow: 0 3px 0 #222; touch-action: manipulation; }
-  .fsbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 #222; }
-  .btn { width: 76px; height: 76px; border-radius: 50%; border: none; color: #fff; font-size: 30px; cursor: pointer;
-         background: radial-gradient(circle at 35% 30%, #e65050, #901818); box-shadow: 0 4px 0 #500, 0 6px 10px #0008;
-         user-select: none; -webkit-user-select: none; touch-action: manipulation; }
-  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #500; }
-  .hint { grid-area: hint; color: #3a3a3a; font-size: 13px; text-align: center; }
-  .rotate { display: none; }
-  @media (orientation: portrait) and (pointer: coarse) {
-    .keys { display: none; } .rotate { display: inline; font-weight: bold; }
-  }
-  @media (orientation: landscape) and (max-height: 520px) {
-    .console { grid-template-areas: "fs screen ." "left screen right"; grid-template-rows: auto 1fr; gap: 8px;
-               box-sizing: border-box; width: 100vw; height: 100vh; height: 100dvh; border-radius: 0;
-               padding: 8px max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left)); }
-    .title, .hint { display: none; }
-    .fsbtn { justify-self: center; align-self: start; }
-    .btn { width: 70px; height: 70px; }
-    canvas { width: min(calc(100vw - 185px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100vh - 20px) * 1.73));
-             width: min(calc(100vw - 185px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100dvh - 20px) * 1.73)); }
-  }
-</style>
-</head>
-<body>
-<div class="console">
-  <div class="title">LIFEBOAT</div>
-  <button class="fsbtn" id="fs" title="Fullscreen (F)">&#x26F6;</button>
-  <canvas id="game" width="900" height="520"></canvas>
-  <button class="btn" id="left">&#9664;</button>
-  <div class="hint">
-    <span class="keys">&larr; &rarr; / A D = varen &nbsp;&bull;&nbsp; SPATIE = start &nbsp;&bull;&nbsp; P = pauze &nbsp;&bull;&nbsp; F = fullscreen</span>
-    <span class="rotate">&#8635; Draai je telefoon voor een groter scherm</span>
-  </div>
-  <button class="btn" id="right">&#9654;</button>
-</div>
-<script>
-const cv = document.getElementById('game'), ctx = cv.getContext('2d');
-const W = 900, H = 520, SEA = 400, SEAT = SEA - 20;
-const BOAT_X = [345, 455, 565, 675, 785], DOCK = 4, CAP = 4;
-const ORIGINS = [{ x: 272, y: 250 }, { x: 228, y: 180 }, { x: 172, y: 180 }];
-const COLORS = ['#e63946', '#f4a261', '#2a9d8f', '#e9c46a', '#8338ec', '#ff006e', '#3a86ff', '#06d6a0'];
-const SKIN = '#f1c27d', PANTS = '#263044';
-const stars = Array.from({ length: 60 }, () => ({ x: Math.random() * W, y: Math.random() * 220, r: Math.random() * 1.4 + .3, p: Math.random() * 6 }));
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <title>Lifeboat</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #2b2b2b;
+        font-family: "Courier New", monospace;
+        overflow: hidden;
+      }
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      button:focus {
+        outline: none;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .console {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 10px 12px;
+        grid-template-areas: "title title fs" "screen screen screen" "left hint right";
+        background: linear-gradient(#cfc8b6, #a59d88);
+        padding: 14px 18px;
+        border-radius: 18px;
+        box-shadow:
+          0 10px 30px #000a,
+          inset 0 2px 0 #fff6;
+      }
+      .title {
+        grid-area: title;
+        color: #8b1d1d;
+        font-weight: bold;
+        font-size: 22px;
+        letter-spacing: 6px;
+        text-align: center;
+        padding-left: 40px;
+      }
+      canvas {
+        grid-area: screen;
+        justify-self: center;
+        display: block;
+        box-sizing: border-box;
+        height: auto;
+        width: min(calc(100vw - 52px), calc((100vh - 190px) * 1.73));
+        width: min(calc(100vw - 52px), calc((100dvh - 190px) * 1.73));
+        border-radius: 6px;
+        border: 4px solid #333;
+        background: #000;
+        touch-action: none;
+      }
+      #left {
+        grid-area: left;
+      }
+      #right {
+        grid-area: right;
+      }
+      .fsbtn {
+        grid-area: fs;
+        justify-self: end;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        background: #4a4a4a;
+        color: #fff;
+        font-size: 22px;
+        box-shadow: 0 3px 0 #222;
+        touch-action: manipulation;
+      }
+      .fsbtn:active {
+        transform: translateY(2px);
+        box-shadow: 0 1px 0 #222;
+      }
+      .btn {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        border: none;
+        color: #fff;
+        font-size: 30px;
+        cursor: pointer;
+        background: radial-gradient(circle at 35% 30%, #e65050, #901818);
+        box-shadow:
+          0 4px 0 #500,
+          0 6px 10px #0008;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
+      .btn:active {
+        transform: translateY(3px);
+        box-shadow: 0 1px 0 #500;
+      }
+      .hint {
+        grid-area: hint;
+        color: #3a3a3a;
+        font-size: 13px;
+        text-align: center;
+      }
+      .rotate {
+        display: none;
+      }
+      @media (orientation: portrait) and (pointer: coarse) {
+        .keys {
+          display: none;
+        }
+        .rotate {
+          display: inline;
+          font-weight: bold;
+        }
+      }
+      @media (orientation: landscape) and (max-height: 520px) {
+        .console {
+          grid-template-areas: "fs screen ." "left screen right";
+          grid-template-rows: auto 1fr;
+          gap: 8px;
+          box-sizing: border-box;
+          width: 100vw;
+          height: 100vh;
+          height: 100dvh;
+          border-radius: 0;
+          padding: 8px max(10px, env(safe-area-inset-right)) 8px
+            max(10px, env(safe-area-inset-left));
+        }
+        .title,
+        .hint {
+          display: none;
+        }
+        .fsbtn {
+          justify-self: center;
+          align-self: start;
+        }
+        .btn {
+          width: 70px;
+          height: 70px;
+        }
+        canvas {
+          width: min(
+            calc(
+              100vw - 185px - env(safe-area-inset-left) -
+                env(safe-area-inset-right)
+            ),
+            calc((100vh - 20px) * 1.73)
+          );
+          width: min(
+            calc(
+              100vw - 185px - env(safe-area-inset-left) -
+                env(safe-area-inset-right)
+            ),
+            calc((100dvh - 20px) * 1.73)
+          );
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="console">
+      <div class="title">LIFEBOAT</div>
+      <button class="fsbtn" id="fs" title="Fullscreen (F)">&#x26F6;</button>
+      <canvas id="game" width="900" height="520"></canvas>
+      <button class="btn" id="left">&#9664;</button>
+      <div class="hint">
+        <span class="keys"
+          >&larr; &rarr; / A D = varen &nbsp;&bull;&nbsp; SPATIE = start
+          &nbsp;&bull;&nbsp; P = pauze &nbsp;&bull;&nbsp; F = fullscreen</span
+        >
+        <span class="rotate"
+          >&#8635; Draai je telefoon voor een groter scherm</span
+        >
+      </div>
+      <button class="btn" id="right">&#9654;</button>
+    </div>
+    <script>
+      const cv = document.getElementById("game"),
+        ctx = cv.getContext("2d");
+      const W = 900,
+        H = 520,
+        SEA = 400,
+        SEAT = SEA - 20;
+      const BOAT_X = [345, 455, 565, 675, 785],
+        DOCK = 4,
+        CAP = 4;
+      const ORIGINS = [
+        { x: 272, y: 250 },
+        { x: 228, y: 180 },
+        { x: 172, y: 180 },
+      ];
+      const COLORS = [
+        "#e63946",
+        "#f4a261",
+        "#2a9d8f",
+        "#e9c46a",
+        "#8338ec",
+        "#ff006e",
+        "#3a86ff",
+        "#06d6a0",
+      ];
+      const SKIN = "#f1c27d",
+        PANTS = "#263044";
+      const stars = Array.from({ length: 60 }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * 220,
+        r: Math.random() * 1.4 + 0.3,
+        p: Math.random() * 6,
+      }));
 
-let state = 'title', hi = +(localStorage.getItem('lifeboatHi') || 0), time = 0;
-let saved, misses, boatPos, boatDrawX, passengers, jumpers, walkers, drowners, popups, smoke = [];
-let acc, tick, nextSpawn, missPause, unloadT, nextBonus, level;
+      let state = "title",
+        hi = +(localStorage.getItem("lifeboatHi") || 0),
+        time = 0;
+      let saved,
+        misses,
+        boatPos,
+        boatDrawX,
+        passengers,
+        jumpers,
+        walkers,
+        drowners,
+        popups,
+        smoke = [];
+      let acc, tick, nextSpawn, missPause, unloadT, nextBonus, level;
 
-function reset() {
-  saved = 0; misses = 0; boatPos = 1; boatDrawX = BOAT_X[1];
-  passengers = []; jumpers = []; walkers = []; drowners = []; popups = [];
-  acc = 0; tick = 0; nextSpawn = 2; missPause = 0; unloadT = 0; nextBonus = 50; level = 1;
-}
-reset();
+      function reset() {
+        saved = 0;
+        misses = 0;
+        boatPos = 1;
+        boatDrawX = BOAT_X[1];
+        passengers = [];
+        jumpers = [];
+        walkers = [];
+        drowners = [];
+        popups = [];
+        acc = 0;
+        tick = 0;
+        nextSpawn = 2;
+        missPause = 0;
+        unloadT = 0;
+        nextBonus = 50;
+        level = 1;
+      }
+      reset();
+      const shark = { x: 500, dir: 1, mode: "patrol", t: 0, prey: null };
 
-// ---------- geluid ----------
-let ac = null;
-function audio() {
-  if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { /* geen audio */ } }
-  if (ac && ac.state === 'suspended') ac.resume();
-}
-function beep(f, d = .06, delay = 0, type = 'square', v = .04) {
-  if (!ac) return;
-  const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
-  o.type = type; o.frequency.value = f;
-  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
-  o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + .02);
-}
+      // ---------- geluid ----------
+      let ac = null;
+      function audio() {
+        if (!ac) {
+          try {
+            ac = new (window.AudioContext || window.webkitAudioContext)();
+          } catch (e) {
+            /* geen audio */
+          }
+        }
+        if (ac && ac.state === "suspended") ac.resume();
+      }
+      function beep(f, d = 0.06, delay = 0, type = "square", v = 0.04) {
+        if (!ac) return;
+        const t = ac.currentTime + delay,
+          o = ac.createOscillator(),
+          g = ac.createGain();
+        o.type = type;
+        o.frequency.value = f;
+        g.gain.setValueAtTime(v, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+        o.connect(g).connect(ac.destination);
+        o.start(t);
+        o.stop(t + d + 0.02);
+      }
 
-// ---------- spel-logica ----------
-// tuned with a bot playtest: a perfect player can keep going, humans top out around 100-200
-const tickMs = () => Math.max(220, 480 - saved * 1.5);
-const unloadMs = () => Math.max(140, 260 - saved);
-const FALL_STEPS = 6, APEX = 120;
+      // ---------- spel-logica ----------
+      // tuned with a bot playtest: a perfect player can keep going, humans top out around 100-200
+      const tickMs = () => Math.max(220, 480 - saved * 1.5);
+      const unloadMs = () => Math.max(140, 260 - saved);
+      const FALL_STEPS = 6,
+        APEX = 120;
 
-function popup(text, x, y, color = '#fff') { popups.push({ text, x, y, t: 0, color }); }
+      function popup(text, x, y, color = "#fff") {
+        popups.push({ text, x, y, t: 0, color });
+      }
 
-function spawn() {
-  const maxJ = Math.min(6, 2 + Math.floor(saved / 20));
-  if (jumpers.length >= maxJ) return;
-  for (let a = 0; a < 6; a++) {
-    const lane = Math.floor(Math.random() * 4);
-    const o = ORIGINS[Math.floor(Math.random() * ORIGINS.length)];
-    if (jumpers.some(j => j.state === 'stand' && j.o === o)) continue;
-    const wait = 2, steps = FALL_STEPS, land = tick + wait + steps;
-    // eerlijk blijven: genoeg tijd om tussen landingsplekken te varen
-    if (!jumpers.every(j => Math.abs(j.land - land) >= Math.max(1, Math.abs(j.lane - lane)))) continue;
-    jumpers.push({ o, lane, wait, step: 0, steps, land, state: 'stand', color: COLORS[Math.floor(Math.random() * COLORS.length)] });
-    return;
-  }
-}
+      function spawn() {
+        const maxJ = Math.min(6, 2 + Math.floor(saved / 20));
+        if (jumpers.length >= maxJ) return;
+        for (let a = 0; a < 6; a++) {
+          const lane = Math.floor(Math.random() * 4);
+          const o = ORIGINS[Math.floor(Math.random() * ORIGINS.length)];
+          if (jumpers.some((j) => j.state === "stand" && j.o === o)) continue;
+          const wait = 2,
+            steps = FALL_STEPS,
+            land = tick + wait + steps;
+          // eerlijk blijven: genoeg tijd om tussen landingsplekken te varen
+          if (
+            !jumpers.every(
+              (j) =>
+                Math.abs(j.land - land) >= Math.max(1, Math.abs(j.lane - lane)),
+            )
+          )
+            continue;
+          jumpers.push({
+            o,
+            lane,
+            wait,
+            step: 0,
+            steps,
+            land,
+            state: "stand",
+            color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          });
+          return;
+        }
+      }
 
-function landJumper(j) {
-  jumpers.splice(jumpers.indexOf(j), 1);
-  if (boatPos === j.lane && passengers.length < CAP) {
-    passengers.push(j.color);
-    beep(880, .05); beep(1320, .06, .05);
-  } else {
-    const full = boatPos === j.lane;
-    drowners.push({ x: BOAT_X[j.lane], t: 0 });
-    misses++; missPause = 1400;
-    popup(full ? 'BOOT VOL!' : 'MIS!', BOAT_X[j.lane], SEA - 70, '#ff6b6b');
-    beep(160, .35, 0, 'sawtooth', .05);
-  }
-}
+      function landJumper(j) {
+        jumpers.splice(jumpers.indexOf(j), 1);
+        if (boatPos === j.lane && passengers.length < CAP) {
+          passengers.push(j.color);
+          beep(880, 0.05);
+          beep(1320, 0.06, 0.05);
+        } else {
+          const full = boatPos === j.lane;
+          drowners.push({ x: BOAT_X[j.lane], t: 0 });
+          misses++;
+          missPause = 1400;
+          popup(
+            full ? "BOOT VOL!" : "MIS!",
+            BOAT_X[j.lane],
+            SEA - 70,
+            "#ff6b6b",
+          );
+          beep(160, 0.35, 0, "sawtooth", 0.05);
+        }
+      }
 
-function doTick() {
-  tick++;
-  let flying = false;
-  for (const j of [...jumpers]) {
-    if (j.state === 'stand') {
-      if (--j.wait <= 0) { j.state = 'fly'; beep(660, .03); }
-    } else {
-      flying = true;
-      if (++j.step >= j.steps) landJumper(j);
-    }
-  }
-  if (flying) beep(420, .015, 0, 'square', .015);
-  if (tick >= nextSpawn) {
-    spawn();
-    nextSpawn = tick + Math.max(2, 5 - Math.floor(saved / 30)) + Math.floor(Math.random() * 3);
-  }
-}
+      function doTick() {
+        tick++;
+        let flying = false;
+        for (const j of [...jumpers]) {
+          if (j.state === "stand") {
+            if (--j.wait <= 0) {
+              j.state = "fly";
+              beep(660, 0.03);
+            }
+          } else {
+            flying = true;
+            if (++j.step >= j.steps) landJumper(j);
+          }
+        }
+        if (flying) beep(420, 0.015, 0, "square", 0.015);
+        if (tick >= nextSpawn) {
+          spawn();
+          nextSpawn =
+            tick +
+            Math.max(2, 5 - Math.floor(saved / 30)) +
+            Math.floor(Math.random() * 3);
+        }
+      }
 
-function deliver() {
-  const c = passengers.shift();
-  walkers.push({ c, t: 0, sx: boatDrawX + 20, sy: SEAT, x: boatDrawX + 20, y: SEAT, pose: 'fly' });
-  saved++;
-  beep(990, .05); beep(1480, .07, .05);
-  const lv = Math.floor(saved / 10) + 1;
-  if (lv > level) { level = lv; popup('SNELLER!', W / 2, 140, '#ffd166'); }
-  if (saved >= nextBonus) {
-    nextBonus += 50;
-    if (misses > 0) { misses--; popup('BONUS: MISSER WEG!', W / 2, 180, '#06d6a0'); }
-    else popup('BONUS!', W / 2, 180, '#06d6a0');
-  }
-}
+      function deliver() {
+        const c = passengers.shift();
+        walkers.push({
+          c,
+          t: 0,
+          sx: boatDrawX + 20,
+          sy: SEAT,
+          x: boatDrawX + 20,
+          y: SEAT,
+          pose: "fly",
+        });
+        saved++;
+        beep(990, 0.05);
+        beep(1480, 0.07, 0.05);
+        const lv = Math.floor(saved / 10) + 1;
+        if (lv > level) {
+          level = lv;
+          popup("SNELLER!", W / 2, 140, "#ffd166");
+        }
+        if (saved >= nextBonus) {
+          nextBonus += 50;
+          if (misses > 0) {
+            misses--;
+            popup("BONUS: MISSER WEG!", W / 2, 180, "#06d6a0");
+          } else popup("BONUS!", W / 2, 180, "#06d6a0");
+        }
+      }
 
-function move(d) {
-  if (state !== 'play') return;
-  const n = Math.max(0, Math.min(DOCK, boatPos + d));
-  if (n !== boatPos) { boatPos = n; beep(220, .03); }
-}
+      function move(d) {
+        if (state !== "play") return;
+        const n = Math.max(0, Math.min(DOCK, boatPos + d));
+        if (n !== boatPos) {
+          boatPos = n;
+          beep(220, 0.03);
+        }
+      }
 
-function action() {
-  audio();
-  if (state === 'title' || state === 'over') { reset(); state = 'play'; }
-}
+      function action() {
+        audio();
+        if (state === "title" || state === "over") {
+          reset();
+          state = "play";
+        }
+      }
 
-function updateSmoke(dt) {
-  if (Math.random() < dt * .02) smoke.push({ x: 102, y: 92, vx: .015 + Math.random() * .02, vy: -.03 - Math.random() * .02, r: 8, a: .5 });
-  if (Math.random() < dt * .012) smoke.push({ x: 50 + Math.random() * 30, y: 140, vx: .01 + Math.random() * .02, vy: -.025 - Math.random() * .02, r: 10, a: .4 });
-  for (const s of smoke) { s.x += s.vx * dt; s.y += s.vy * dt; s.r += .012 * dt; s.a -= .00022 * dt; }
-  smoke = smoke.filter(s => s.a > 0);
-}
+      function updateShark(dt) {
+        if (shark.mode === "eat") {
+          shark.t += dt;
+          if (shark.prey && shark.t >= 250) {
+            shark.prey.eaten = true;
+            shark.prey = null;
+            beep(90, 0.15, 0, "sawtooth", 0.06);
+            beep(60, 0.2, 0.08, "sawtooth", 0.06);
+          }
+          if (shark.t >= 500) shark.mode = "patrol";
+          return;
+        }
+        const prey = drowners.find((d) => !d.eaten);
+        if (prey) {
+          const dx = prey.x - shark.x,
+            step = 0.7 * dt;
+          if (dx) shark.dir = Math.sign(dx);
+          if (Math.abs(dx) > step) shark.x += shark.dir * step;
+          else {
+            shark.x = prey.x;
+            // let the splash play before the shark strikes
+            if (prey.t > 400) {
+              shark.mode = "eat";
+              shark.t = 0;
+              shark.prey = prey;
+            }
+          }
+        } else {
+          shark.x += shark.dir * 0.05 * dt;
+          if (shark.x > 800) shark.dir = -1;
+          if (shark.x < 330) shark.dir = 1;
+        }
+      }
 
-function update(dt) {
-  time += dt;
-  updateSmoke(dt);
-  if (state !== 'play') return;
+      function updateSmoke(dt) {
+        if (Math.random() < dt * 0.02)
+          smoke.push({
+            x: 102,
+            y: 92,
+            vx: 0.015 + Math.random() * 0.02,
+            vy: -0.03 - Math.random() * 0.02,
+            r: 8,
+            a: 0.5,
+          });
+        if (Math.random() < dt * 0.012)
+          smoke.push({
+            x: 50 + Math.random() * 30,
+            y: 140,
+            vx: 0.01 + Math.random() * 0.02,
+            vy: -0.025 - Math.random() * 0.02,
+            r: 10,
+            a: 0.4,
+          });
+        for (const s of smoke) {
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+          s.r += 0.012 * dt;
+          s.a -= 0.00022 * dt;
+        }
+        smoke = smoke.filter((s) => s.a > 0);
+      }
 
-  boatDrawX += (BOAT_X[boatPos] - boatDrawX) * Math.min(1, dt / 50);
+      function update(dt) {
+        time += dt;
+        updateSmoke(dt);
+        if (state !== "paused") updateShark(dt);
+        if (state !== "play") return;
 
-  if (missPause > 0) {
-    missPause -= dt;
-    if (missPause <= 0 && misses >= 3) {
-      state = 'over';
-      if (saved > hi) { hi = saved; localStorage.setItem('lifeboatHi', hi); }
-      [523, 440, 349, 262].forEach((f, i) => beep(f, .2, i * .18, 'square', .05));
-    }
-  } else {
-    acc += dt;
-    const tm = tickMs();
-    while (acc >= tm) {
-      acc -= tm; doTick();
-      if (missPause > 0) { acc = 0; break; }
-    }
-    if (boatPos === DOCK && passengers.length && Math.abs(boatDrawX - BOAT_X[DOCK]) < 3) {
-      unloadT += dt;
-      if (unloadT >= unloadMs()) { unloadT = 0; deliver(); }
-    } else unloadT = 0;
-  }
+        boatDrawX += (BOAT_X[boatPos] - boatDrawX) * Math.min(1, dt / 50);
 
-  for (const w of walkers) {
-    w.t += dt;
-    if (w.t < 280) {
-      const p = w.t / 280;
-      w.x = w.sx + (868 - w.sx) * p; w.y = w.sy + (372 - w.sy) * p - 30 * 4 * p * (1 - p); w.pose = 'fly';
-    } else { w.x += dt * .09; w.y = 372; w.pose = 'walk'; }
-  }
-  walkers = walkers.filter(w => w.x < W + 20);
-  for (const d of drowners) d.t += dt;
-  drowners = drowners.filter(d => d.t < 1600);
-  for (const p of popups) p.t += dt;
-  popups = popups.filter(p => p.t < 1200);
-}
+        if (missPause > 0) {
+          missPause -= dt;
+          if (missPause <= 0 && misses >= 3) {
+            state = "over";
+            if (saved > hi) {
+              hi = saved;
+              localStorage.setItem("lifeboatHi", hi);
+            }
+            [523, 440, 349, 262].forEach((f, i) =>
+              beep(f, 0.2, i * 0.18, "square", 0.05),
+            );
+          }
+        } else {
+          acc += dt;
+          const tm = tickMs();
+          while (acc >= tm) {
+            acc -= tm;
+            doTick();
+            if (missPause > 0) {
+              acc = 0;
+              break;
+            }
+          }
+          if (
+            boatPos === DOCK &&
+            passengers.length &&
+            Math.abs(boatDrawX - BOAT_X[DOCK]) < 3
+          ) {
+            unloadT += dt;
+            if (unloadT >= unloadMs()) {
+              unloadT = 0;
+              deliver();
+            }
+          } else unloadT = 0;
+        }
 
-// ---------- tekenen ----------
-function line(x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
-function circle(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+        for (const w of walkers) {
+          w.t += dt;
+          if (w.t < 280) {
+            const p = w.t / 280;
+            w.x = w.sx + (868 - w.sx) * p;
+            w.y = w.sy + (372 - w.sy) * p - 30 * 4 * p * (1 - p);
+            w.pose = "fly";
+          } else {
+            w.x += dt * 0.09;
+            w.y = 372;
+            w.pose = "walk";
+          }
+        }
+        walkers = walkers.filter((w) => w.x < W + 20);
+        for (const d of drowners) d.t += dt;
+        drowners = drowners.filter((d) => !d.eaten && d.t < 4000);
+        for (const p of popups) p.t += dt;
+        popups = popups.filter((p) => p.t < 1200);
+      }
 
-function drawPerson(x, y, pose, color, ph = 0, cap = false) {
-  ctx.save(); ctx.translate(x, y); ctx.lineCap = 'round';
-  if (pose === 'sit') {
-    ctx.strokeStyle = color; ctx.lineWidth = 6; line(0, -17, 0, -3);
-    ctx.strokeStyle = SKIN; ctx.lineWidth = 3; line(0, -14, -6, -6); line(0, -14, 6, -6);
-  } else {
-    ctx.strokeStyle = PANTS; ctx.lineWidth = 3;
-    if (pose === 'walk') { const s = Math.sin(ph) * 5; line(0, -8, s, 0); line(0, -8, -s, 0); }
-    else if (pose === 'fly') { line(0, -8, -7, 1); line(0, -8, 7, -1); }
-    else { line(0, -8, -3, 0); line(0, -8, 3, 0); }
-    ctx.strokeStyle = color; ctx.lineWidth = 6; line(0, -18, 0, -8);
-    ctx.strokeStyle = SKIN; ctx.lineWidth = 3;
-    if (pose === 'fly') { line(0, -16, -9, -27); line(0, -16, 9, -27); }
-    else if (pose === 'stand') { line(0, -16, -5, -8); line(0, -16, 6 + Math.sin(ph) * 3, -28); }
-    else { const s = Math.sin(ph) * 4; line(0, -16, s, -8); line(0, -16, -s, -8); }
-  }
-  ctx.fillStyle = SKIN; circle(0, -24, 5);
-  if (cap) { ctx.fillStyle = '#fff'; ctx.fillRect(-6, -31, 12, 4); }
-  ctx.restore();
-}
+      // ---------- tekenen ----------
+      function line(x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+      function circle(x, y, r) {
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-function flameLayer(x, y, w, h, c, seed) {
-  ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x - w / 2, y);
-  ctx.quadraticCurveTo(x - w / 2, y - h * .6, x + Math.sin(time / 120 + seed) * w * .25, y - h);
-  ctx.quadraticCurveTo(x + w / 2, y - h * .6, x + w / 2, y); ctx.closePath(); ctx.fill();
-}
-function flame(x, y, w, h, seed) {
-  const grow = 1 + Math.min(.6, (level - 1) * .06);
-  const hh = h * grow * (1 + Math.sin(time / 90 + seed) * .15 + Math.sin(time / 53 + seed * 2) * .1);
-  flameLayer(x, y, w, hh, 'rgba(255,80,20,.9)', seed);
-  flameLayer(x, y, w * .65, hh * .7, 'rgba(255,170,40,.95)', seed + 1);
-  flameLayer(x, y, w * .35, hh * .4, 'rgba(255,240,150,1)', seed + 2);
-}
+      function drawPerson(x, y, pose, color, ph = 0, cap = false) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.lineCap = "round";
+        if (pose === "sit") {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 6;
+          line(0, -17, 0, -3);
+          ctx.strokeStyle = SKIN;
+          ctx.lineWidth = 3;
+          line(0, -14, -6, -6);
+          line(0, -14, 6, -6);
+        } else {
+          ctx.strokeStyle = PANTS;
+          ctx.lineWidth = 3;
+          if (pose === "walk") {
+            const s = Math.sin(ph) * 5;
+            line(0, -8, s, 0);
+            line(0, -8, -s, 0);
+          } else if (pose === "fly") {
+            line(0, -8, -7, 1);
+            line(0, -8, 7, -1);
+          } else {
+            line(0, -8, -3, 0);
+            line(0, -8, 3, 0);
+          }
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 6;
+          line(0, -18, 0, -8);
+          ctx.strokeStyle = SKIN;
+          ctx.lineWidth = 3;
+          if (pose === "fly") {
+            line(0, -16, -9, -27);
+            line(0, -16, 9, -27);
+          } else if (pose === "stand") {
+            line(0, -16, -5, -8);
+            line(0, -16, 6 + Math.sin(ph) * 3, -28);
+          } else {
+            const s = Math.sin(ph) * 4;
+            line(0, -16, s, -8);
+            line(0, -16, -s, -8);
+          }
+        }
+        ctx.fillStyle = SKIN;
+        circle(0, -24, 5);
+        if (cap) {
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(-6, -31, 12, 4);
+        }
+        ctx.restore();
+      }
 
-function rail(x1, x2, y) {
-  ctx.strokeStyle = '#bbb'; ctx.lineWidth = 2; line(x1, y - 12, x2, y - 12);
-  for (let x = x1; x <= x2; x += 10) line(x, y, x, y - 12);
-}
+      function flameLayer(x, y, w, h, c, seed) {
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.moveTo(x - w / 2, y);
+        ctx.quadraticCurveTo(
+          x - w / 2,
+          y - h * 0.6,
+          x + Math.sin(time / 120 + seed) * w * 0.25,
+          y - h,
+        );
+        ctx.quadraticCurveTo(x + w / 2, y - h * 0.6, x + w / 2, y);
+        ctx.closePath();
+        ctx.fill();
+      }
+      function flame(x, y, w, h, seed) {
+        const grow = 1 + Math.min(0.6, (level - 1) * 0.06);
+        const hh =
+          h *
+          grow *
+          (1 +
+            Math.sin(time / 90 + seed) * 0.15 +
+            Math.sin(time / 53 + seed * 2) * 0.1);
+        flameLayer(x, y, w, hh, "rgba(255,80,20,.9)", seed);
+        flameLayer(x, y, w * 0.65, hh * 0.7, "rgba(255,170,40,.95)", seed + 1);
+        flameLayer(x, y, w * 0.35, hh * 0.4, "rgba(255,240,150,1)", seed + 2);
+      }
 
-function drawShip() {
-  const glow = () => `rgb(255,${140 + Math.floor(Math.random() * 60)},40)`;
-  ctx.fillStyle = '#2f3542';
-  ctx.beginPath(); ctx.moveTo(0, 250); ctx.lineTo(292, 250); ctx.lineTo(262, 420); ctx.lineTo(0, 420); ctx.fill();
-  ctx.fillStyle = '#b23a3a';
-  ctx.beginPath(); ctx.moveTo(0, 378); ctx.lineTo(269, 378); ctx.lineTo(266, 396); ctx.lineTo(0, 396); ctx.fill();
-  for (let x = 30; x < 250; x += 36) { ctx.fillStyle = glow(); circle(x, 300, 6); }
-  rail(244, 290, 250);
-  ctx.fillStyle = '#ddd5c3'; ctx.fillRect(40, 180, 200, 70);
-  for (let x = 55; x < 225; x += 34) { ctx.fillStyle = glow(); ctx.fillRect(x, 198, 20, 16); }
-  rail(40, 240, 180);
-  ctx.fillStyle = '#cfc6b2'; ctx.fillRect(60, 145, 80, 35);
-  ctx.fillStyle = glow(); ctx.fillRect(70, 155, 14, 12); ctx.fillRect(115, 155, 14, 12);
-  ctx.fillStyle = '#c0392b'; ctx.fillRect(85, 95, 34, 50);
-  ctx.fillStyle = '#222'; ctx.fillRect(85, 95, 34, 10);
-  ctx.strokeStyle = '#999'; ctx.lineWidth = 3; line(205, 180, 205, 105);
-  flame(15, 250, 40, 60, 1);
-  flame(60, 180, 40, 55, 3);
-  flame(110, 145, 30, 40, 5);
-  flame(150, 250, 30, 35, 7);
-}
+      function rail(x1, x2, y) {
+        ctx.strokeStyle = "#bbb";
+        ctx.lineWidth = 2;
+        line(x1, y - 12, x2, y - 12);
+        for (let x = x1; x <= x2; x += 10) line(x, y, x, y - 12);
+      }
 
-function drawShore() {
-  ctx.fillStyle = '#e9c46a';
-  ctx.beginPath(); ctx.moveTo(845, H); ctx.lineTo(845, 385); ctx.quadraticCurveTo(850, 372, 870, 372);
-  ctx.lineTo(W, 372); ctx.lineTo(W, H); ctx.fill();
-  ctx.fillStyle = '#6b4226'; ctx.fillRect(838, 340, 8, 70);
-  ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 6; line(885, 372, 880, 300);
-  ctx.fillStyle = '#2a9d8f';
-  for (let a = 0; a < 5; a++) {
-    ctx.save(); ctx.translate(880, 300); ctx.rotate(-Math.PI / 2 + (a - 2) * .6);
-    ctx.beginPath(); ctx.ellipse(18, 0, 20, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-  }
-}
+      function drawShip() {
+        const glow = () =>
+          `rgb(255,${140 + Math.floor(Math.random() * 60)},40)`;
+        ctx.fillStyle = "#2f3542";
+        ctx.beginPath();
+        ctx.moveTo(0, 250);
+        ctx.lineTo(292, 250);
+        ctx.lineTo(262, 420);
+        ctx.lineTo(0, 420);
+        ctx.fill();
+        ctx.fillStyle = "#b23a3a";
+        ctx.beginPath();
+        ctx.moveTo(0, 378);
+        ctx.lineTo(269, 378);
+        ctx.lineTo(266, 396);
+        ctx.lineTo(0, 396);
+        ctx.fill();
+        for (let x = 30; x < 250; x += 36) {
+          ctx.fillStyle = glow();
+          circle(x, 300, 6);
+        }
+        rail(244, 290, 250);
+        ctx.fillStyle = "#ddd5c3";
+        ctx.fillRect(40, 180, 200, 70);
+        for (let x = 55; x < 225; x += 34) {
+          ctx.fillStyle = glow();
+          ctx.fillRect(x, 198, 20, 16);
+        }
+        rail(40, 240, 180);
+        ctx.fillStyle = "#cfc6b2";
+        ctx.fillRect(60, 145, 80, 35);
+        ctx.fillStyle = glow();
+        ctx.fillRect(70, 155, 14, 12);
+        ctx.fillRect(115, 155, 14, 12);
+        ctx.fillStyle = "#c0392b";
+        ctx.fillRect(85, 95, 34, 50);
+        ctx.fillStyle = "#222";
+        ctx.fillRect(85, 95, 34, 10);
+        ctx.strokeStyle = "#999";
+        ctx.lineWidth = 3;
+        line(205, 180, 205, 105);
+        flame(15, 250, 40, 60, 1);
+        flame(60, 180, 40, 55, 3);
+        flame(110, 145, 30, 40, 5);
+        flame(150, 250, 30, 35, 7);
+      }
 
-function drawBoat(x) {
-  ctx.save(); ctx.translate(0, Math.sin(time / 300) * 1.5);
-  drawPerson(x - 46, SEAT, 'sit', '#1d3557', 0, true);
-  drawPerson(x + 46, SEAT, 'sit', '#1d3557', 0, true);
-  const off = [-27, -9, 9, 27];
-  passengers.forEach((c, i) => drawPerson(x + off[i], SEAT, 'sit', c));
-  ctx.fillStyle = '#f3722c';
-  ctx.beginPath(); ctx.moveTo(x - 62, SEAT - 4); ctx.lineTo(x + 62, SEAT - 4);
-  ctx.quadraticCurveTo(x + 58, SEA + 10, x + 36, SEA + 10); ctx.lineTo(x - 36, SEA + 10);
-  ctx.quadraticCurveTo(x - 58, SEA + 10, x - 62, SEAT - 4); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.fillRect(x - 56, SEAT + 4, 112, 4);
-  if (passengers.length >= CAP) {
-    ctx.fillStyle = '#ff6b6b'; ctx.font = 'bold 16px "Courier New", monospace'; ctx.textAlign = 'center';
-    ctx.fillText('VOL', x, SEAT - 40);
-  }
-  ctx.restore();
-}
+      function drawShore() {
+        ctx.fillStyle = "#e9c46a";
+        ctx.beginPath();
+        ctx.moveTo(845, H);
+        ctx.lineTo(845, 385);
+        ctx.quadraticCurveTo(850, 372, 870, 372);
+        ctx.lineTo(W, 372);
+        ctx.lineTo(W, H);
+        ctx.fill();
+        ctx.fillStyle = "#6b4226";
+        ctx.fillRect(838, 340, 8, 70);
+        ctx.strokeStyle = "#7a5230";
+        ctx.lineWidth = 6;
+        line(885, 372, 880, 300);
+        ctx.fillStyle = "#2a9d8f";
+        for (let a = 0; a < 5; a++) {
+          ctx.save();
+          ctx.translate(880, 300);
+          ctx.rotate(-Math.PI / 2 + (a - 2) * 0.6);
+          ctx.beginPath();
+          ctx.ellipse(18, 0, 20, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
 
-function drawDrowner(d) {
-  const s = Math.min(1, d.t / 1600), y = SEA + 2 + s * 18 + Math.sin(d.t / 120) * 2, x = d.x;
-  ctx.save(); ctx.globalAlpha = 1 - s * .9; ctx.lineCap = 'round';
-  ctx.strokeStyle = SKIN; ctx.lineWidth = 3;
-  line(x - 4, y - 4, x - 12, y - 18 + Math.sin(d.t / 80) * 4);
-  line(x + 4, y - 4, x + 12, y - 18 - Math.sin(d.t / 80) * 4);
-  ctx.fillStyle = SKIN; circle(x, y - 6, 5);
-  ctx.fillStyle = 'rgba(255,255,255,.7)';
-  if (d.t < 350) for (let i = 0; i < 6; i++) { const a = Math.PI + i * Math.PI / 5; circle(x + Math.cos(a) * d.t * .08, SEA - Math.abs(Math.sin(a)) * d.t * .06, 2.5); }
-  for (let i = 0; i < 3; i++) circle(x - 8 + i * 8, SEA - 6 - ((d.t / 10 + i * 13) % 25), 2);
-  ctx.restore();
-}
+      function drawBoat(x) {
+        ctx.save();
+        ctx.translate(0, Math.sin(time / 300) * 1.5);
+        drawPerson(x - 46, SEAT, "sit", "#1d3557", 0, true);
+        drawPerson(x + 46, SEAT, "sit", "#1d3557", 0, true);
+        const off = [-27, -9, 9, 27];
+        passengers.forEach((c, i) => drawPerson(x + off[i], SEAT, "sit", c));
+        ctx.fillStyle = "#f3722c";
+        ctx.beginPath();
+        ctx.moveTo(x - 62, SEAT - 4);
+        ctx.lineTo(x + 62, SEAT - 4);
+        ctx.quadraticCurveTo(x + 58, SEA + 10, x + 36, SEA + 10);
+        ctx.lineTo(x - 36, SEA + 10);
+        ctx.quadraticCurveTo(x - 58, SEA + 10, x - 62, SEAT - 4);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(x - 56, SEAT + 4, 112, 4);
+        if (passengers.length >= CAP) {
+          ctx.fillStyle = "#ff6b6b";
+          ctx.font = 'bold 16px "Courier New", monospace';
+          ctx.textAlign = "center";
+          ctx.fillText("VOL", x, SEAT - 40);
+        }
+        ctx.restore();
+      }
 
-function jumperPos(j, frac) {
-  if (j.state === 'stand') return { x: j.o.x, y: j.o.y, p: 0 };
-  const p = Math.min(1, (j.step + frac) / j.steps), tx = BOAT_X[j.lane], h = (j.o.y + SEAT) / 2 - APEX;
-  return { x: j.o.x + (tx - j.o.x) * p, y: j.o.y + (SEAT - j.o.y) * p - h * 4 * p * (1 - p), p };
-}
+      function drawDrowner(d) {
+        const y = SEA + 2 + Math.sin(d.t / 120) * 2,
+          x = d.x;
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.strokeStyle = SKIN;
+        ctx.lineWidth = 3;
+        line(x - 4, y - 4, x - 12, y - 18 + Math.sin(d.t / 80) * 4);
+        line(x + 4, y - 4, x + 12, y - 18 - Math.sin(d.t / 80) * 4);
+        ctx.fillStyle = SKIN;
+        circle(x, y - 6, 5);
+        ctx.fillStyle = "rgba(255,255,255,.7)";
+        if (d.t < 350)
+          for (let i = 0; i < 6; i++) {
+            const a = Math.PI + (i * Math.PI) / 5;
+            circle(
+              x + Math.cos(a) * d.t * 0.08,
+              SEA - Math.abs(Math.sin(a)) * d.t * 0.06,
+              2.5,
+            );
+          }
+        for (let i = 0; i < 3; i++)
+          circle(x - 8 + i * 8, SEA - 6 - ((d.t / 10 + i * 13) % 25), 2);
+        ctx.restore();
+      }
 
-function overlay(title, lines) {
-  ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, 0, W, H);
-  ctx.textAlign = 'center'; ctx.fillStyle = '#ffd166'; ctx.font = 'bold 56px "Courier New", monospace';
-  ctx.fillText(title, W / 2, H / 2 - 70);
-  ctx.fillStyle = '#fff'; ctx.font = 'bold 18px "Courier New", monospace';
-  lines.forEach((l, i) => ctx.fillText(l, W / 2, H / 2 - 20 + i * 30));
-}
+      function drawShark() {
+        const x = shark.x,
+          d = shark.dir;
+        if (shark.mode === "eat") {
+          const p = Math.min(1, shark.t / 500),
+            rise = Math.sin(p * Math.PI) * 30,
+            open = p < 0.5 ? 0.7 : Math.max(0, 0.7 - (p - 0.5) * 4);
+          ctx.save();
+          ctx.translate(x - 15 * d, SEA + 8 - rise);
+          ctx.scale(d, 1);
+          ctx.fillStyle = "#5a1a1a";
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, 30, -open, open);
+          ctx.fill();
+          for (const [sgn, rot] of [
+            [-1, -open],
+            [1, open],
+          ]) {
+            ctx.save();
+            ctx.rotate(rot);
+            ctx.fillStyle = "#8d99ae";
+            ctx.beginPath();
+            ctx.moveTo(-20, 0);
+            ctx.lineTo(36, 0);
+            ctx.quadraticCurveTo(10, sgn * 22, -20, sgn * 18);
+            ctx.fill();
+            ctx.fillStyle = "#fff";
+            for (let i = 0; i < 5; i++) {
+              ctx.beginPath();
+              ctx.moveTo(6 + i * 6, 0);
+              ctx.lineTo(9 + i * 6, -sgn * 6);
+              ctx.lineTo(12 + i * 6, 0);
+              ctx.fill();
+            }
+            if (sgn < 0) {
+              ctx.fillStyle = "#111";
+              circle(2, -9, 2.5);
+            }
+            ctx.restore();
+          }
+          ctx.restore();
+          return;
+        }
+        const bob = Math.sin(time / 400) * 1.5;
+        ctx.fillStyle = "rgba(0,0,0,.25)";
+        ctx.beginPath();
+        ctx.ellipse(x - 10 * d, SEA + 18, 42, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#6c7a89";
+        ctx.beginPath();
+        ctx.moveTo(x + 10 * d, SEA + 2);
+        ctx.quadraticCurveTo(x + 2 * d, SEA - 14, x - 10 * d, SEA - 20 + bob);
+        ctx.lineTo(x - 14 * d, SEA + 2);
+        ctx.fill();
+      }
 
-function render() {
-  const sky = ctx.createLinearGradient(0, 0, 0, SEA);
-  sky.addColorStop(0, '#120c2a'); sky.addColorStop(1, '#5a2a3a');
-  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, SEA);
-  for (const s of stars) { ctx.fillStyle = `rgba(255,255,255,${.4 + .4 * Math.sin(time / 600 + s.p)})`; circle(s.x, s.y, s.r); }
-  ctx.fillStyle = '#f5f0d0'; circle(620, 75, 22);
+      function jumperPos(j, frac) {
+        if (j.state === "stand") return { x: j.o.x, y: j.o.y, p: 0 };
+        const p = Math.min(1, (j.step + frac) / j.steps),
+          tx = BOAT_X[j.lane],
+          h = (j.o.y + SEAT) / 2 - APEX;
+        return {
+          x: j.o.x + (tx - j.o.x) * p,
+          y: j.o.y + (SEAT - j.o.y) * p - h * 4 * p * (1 - p),
+          p,
+        };
+      }
 
-  const g = ctx.createRadialGradient(130, 220, 10, 130, 220, 300);
-  g.addColorStop(0, `rgba(255,120,30,${.35 + Math.random() * .08})`); g.addColorStop(1, 'rgba(255,120,30,0)');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, 500, SEA);
+      function overlay(title, lines) {
+        ctx.fillStyle = "rgba(0,0,0,.6)";
+        ctx.fillRect(0, 0, W, H);
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffd166";
+        ctx.font = 'bold 56px "Courier New", monospace';
+        ctx.fillText(title, W / 2, H / 2 - 70);
+        ctx.fillStyle = "#fff";
+        ctx.font = 'bold 18px "Courier New", monospace';
+        lines.forEach((l, i) => ctx.fillText(l, W / 2, H / 2 - 20 + i * 30));
+      }
 
-  drawShip();
-  drawShore();
+      function render() {
+        const sky = ctx.createLinearGradient(0, 0, 0, SEA);
+        sky.addColorStop(0, "#120c2a");
+        sky.addColorStop(1, "#5a2a3a");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, SEA);
+        for (const s of stars) {
+          ctx.fillStyle = `rgba(255,255,255,${0.4 + 0.4 * Math.sin(time / 600 + s.p)})`;
+          circle(s.x, s.y, s.r);
+        }
+        ctx.fillStyle = "#f5f0d0";
+        circle(620, 75, 22);
 
-  const sea = ctx.createLinearGradient(0, SEA, 0, H);
-  sea.addColorStop(0, '#1d5a8a'); sea.addColorStop(1, '#0b2238');
-  ctx.fillStyle = sea; ctx.fillRect(0, SEA - 4, W, H - SEA + 4);
-  ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 2;
-  for (let r = 0; r < 4; r++) {
-    ctx.beginPath();
-    for (let x = 0; x <= W; x += 10) ctx.lineTo(x, SEA + 20 + r * 28 + Math.sin(x / 40 + time / 500 + r) * 3);
-    ctx.stroke();
-  }
+        const g = ctx.createRadialGradient(130, 220, 10, 130, 220, 300);
+        g.addColorStop(0, `rgba(255,120,30,${0.35 + Math.random() * 0.08})`);
+        g.addColorStop(1, "rgba(255,120,30,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, 500, SEA);
 
-  const frac = Math.min(1, acc / tickMs());
-  for (const j of jumpers) if (j.state === 'fly') {
-    const p = jumperPos(j, frac).p;
-    ctx.strokeStyle = `rgba(255,255,255,${.15 + .5 * p})`; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.ellipse(BOAT_X[j.lane], SEA + 4, 18 + 6 * Math.sin(time / 150), 4, 0, 0, Math.PI * 2); ctx.stroke();
-  }
-  drowners.forEach(drawDrowner);
-  drawBoat(boatDrawX);
+        drawShip();
+        drawShore();
 
-  for (const j of jumpers) {
-    const pos = jumperPos(j, frac);
-    drawPerson(pos.x, pos.y, j.state === 'stand' ? 'stand' : 'fly', j.color, time / 80);
-  }
-  for (const w of walkers) drawPerson(w.x, w.y, w.pose, w.c, w.t / 70);
+        const sea = ctx.createLinearGradient(0, SEA, 0, H);
+        sea.addColorStop(0, "#1d5a8a");
+        sea.addColorStop(1, "#0b2238");
+        ctx.fillStyle = sea;
+        ctx.fillRect(0, SEA - 4, W, H - SEA + 4);
+        ctx.strokeStyle = "rgba(255,255,255,.25)";
+        ctx.lineWidth = 2;
+        for (let r = 0; r < 4; r++) {
+          ctx.beginPath();
+          for (let x = 0; x <= W; x += 10)
+            ctx.lineTo(
+              x,
+              SEA + 20 + r * 28 + Math.sin(x / 40 + time / 500 + r) * 3,
+            );
+          ctx.stroke();
+        }
 
-  for (const s of smoke) { ctx.fillStyle = `rgba(55,55,65,${s.a})`; circle(s.x, s.y, s.r); }
+        const frac = Math.min(1, acc / tickMs());
+        for (const j of jumpers)
+          if (j.state === "fly") {
+            const p = jumperPos(j, frac).p;
+            ctx.strokeStyle = `rgba(255,255,255,${0.15 + 0.5 * p})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(
+              BOAT_X[j.lane],
+              SEA + 4,
+              18 + 6 * Math.sin(time / 150),
+              4,
+              0,
+              0,
+              Math.PI * 2,
+            );
+            ctx.stroke();
+          }
+        drowners.forEach(drawDrowner);
+        drawShark();
+        drawBoat(boatDrawX);
 
-  ctx.fillStyle = 'rgba(29,90,138,.45)'; ctx.fillRect(0, SEA + 2, W, 10);
+        for (const j of jumpers) {
+          const pos = jumperPos(j, frac);
+          drawPerson(
+            pos.x,
+            pos.y,
+            j.state === "stand" ? "stand" : "fly",
+            j.color,
+            time / 80,
+          );
+        }
+        for (const w of walkers) drawPerson(w.x, w.y, w.pose, w.c, w.t / 70);
 
-  // HUD
-  ctx.textAlign = 'right'; ctx.fillStyle = '#ffe9a8';
-  ctx.font = 'bold 24px "Courier New", monospace'; ctx.fillText('GERED ' + String(saved).padStart(3, '0'), W - 20, 34);
-  ctx.font = 'bold 16px "Courier New", monospace'; ctx.fillText('RECORD ' + String(hi).padStart(3, '0'), W - 20, 56);
-  for (let i = 0; i < 3; i++) {
-    const x = W - 30 - i * 28, y = 80;
-    ctx.strokeStyle = i < misses ? '#ff4d4d' : 'rgba(255,255,255,.25)'; ctx.lineWidth = 4;
-    line(x - 8, y - 8, x + 8, y + 8); line(x + 8, y - 8, x - 8, y + 8);
-  }
-  ctx.textAlign = 'center'; ctx.fillStyle = '#ffe9a8'; ctx.font = 'bold 18px "Courier New", monospace';
-  ctx.fillText('SNELHEID ' + level, W / 2 + 60, 34);
+        for (const s of smoke) {
+          ctx.fillStyle = `rgba(55,55,65,${s.a})`;
+          circle(s.x, s.y, s.r);
+        }
 
-  for (const p of popups) {
-    ctx.globalAlpha = 1 - p.t / 1200; ctx.fillStyle = p.color; ctx.font = 'bold 26px "Courier New", monospace';
-    ctx.fillText(p.text, p.x, p.y - p.t * .03);
-  }
-  ctx.globalAlpha = 1;
+        ctx.fillStyle = "rgba(29,90,138,.45)";
+        ctx.fillRect(0, SEA + 2, W, 10);
 
-  if (state === 'title') overlay('LIFEBOAT', [
-    'Het schip staat in brand! Vang de springers met je reddingsboot.',
-    'Er passen maar 4 mensen in de boot: zet ze rechts aan de kant af.',
-    '3 keer mis = game over. Het gaat steeds sneller...',
-    'Druk op SPATIE of tik om te starten']);
-  else if (state === 'over') overlay('GAME OVER', [`Gered: ${saved}   Record: ${hi}`, '', 'Druk op SPATIE of tik om opnieuw te spelen']);
-  else if (state === 'paused') overlay('PAUZE', ['Druk op P om verder te spelen']);
-}
+        // HUD
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#ffe9a8";
+        ctx.font = 'bold 24px "Courier New", monospace';
+        ctx.fillText("GERED " + String(saved).padStart(3, "0"), W - 20, 34);
+        ctx.font = 'bold 16px "Courier New", monospace';
+        ctx.fillText("RECORD " + String(hi).padStart(3, "0"), W - 20, 56);
+        for (let i = 0; i < 3; i++) {
+          const x = W - 30 - i * 28,
+            y = 80;
+          ctx.strokeStyle = i < misses ? "#ff4d4d" : "rgba(255,255,255,.25)";
+          ctx.lineWidth = 4;
+          line(x - 8, y - 8, x + 8, y + 8);
+          line(x + 8, y - 8, x - 8, y + 8);
+        }
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffe9a8";
+        ctx.font = 'bold 18px "Courier New", monospace';
+        ctx.fillText("SNELHEID " + level, W / 2 + 60, 34);
 
-// ---------- invoer ----------
-addEventListener('keydown', e => {
-  audio();
-  if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
-  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') move(-1);
-  else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') move(1);
-  else if (e.key === ' ' || e.key === 'Enter') action();
-  else if (e.key === 'p' || e.key === 'P') {
-    if (state === 'play') state = 'paused'; else if (state === 'paused') state = 'play';
-  }
-  else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
-});
+        for (const p of popups) {
+          ctx.globalAlpha = 1 - p.t / 1200;
+          ctx.fillStyle = p.color;
+          ctx.font = 'bold 26px "Courier New", monospace';
+          ctx.fillText(p.text, p.x, p.y - p.t * 0.03);
+        }
+        ctx.globalAlpha = 1;
 
-function toggleFullscreen() {
-  const root = document.documentElement;
-  const request = root.requestFullscreen || root.webkitRequestFullscreen;
-  if (!request) {
-    alert('Fullscreen werkt niet in deze browser.\nOp iPhone: tik op Deel → "Zet op beginscherm" en start de game van daaruit.');
-    return;
-  }
-  if (document.fullscreenElement || document.webkitFullscreenElement) {
-    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-  } else {
-    Promise.resolve(request.call(root))
-      .then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape'))
-      .catch(() => {});
-  }
-}
-document.getElementById('fs').addEventListener('click', e => { e.currentTarget.blur(); toggleFullscreen(); });
-for (const [id, d] of [['left', -1], ['right', 1]]) {
-  document.getElementById(id).addEventListener('pointerdown', e => {
-    e.preventDefault(); audio();
-    if (state === 'play') move(d); else action();
-  });
-}
-cv.addEventListener('pointerdown', e => {
-  audio();
-  if (state !== 'play') return action();
-  const r = cv.getBoundingClientRect();
-  move(e.clientX - r.left < r.width / 2 ? -1 : 1);
-});
+        if (state === "title")
+          overlay("LIFEBOAT", [
+            "Het schip staat in brand! Vang de springers met je reddingsboot.",
+            "Er passen maar 4 mensen in de boot: zet ze rechts aan de kant af.",
+            "3 keer mis = game over. Het gaat steeds sneller...",
+            "Druk op SPATIE of tik om te starten",
+          ]);
+        else if (state === "over")
+          overlay("GAME OVER", [
+            `Gered: ${saved}   Record: ${hi}`,
+            "",
+            "Druk op SPATIE of tik om opnieuw te spelen",
+          ]);
+        else if (state === "paused")
+          overlay("PAUZE", ["Druk op P om verder te spelen"]);
+      }
 
-let last = performance.now();
-function loop(now) {
-  update(Math.min(50, now - last)); last = now;
-  render();
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-</script>
-</body>
+      // ---------- invoer ----------
+      addEventListener("keydown", (e) => {
+        audio();
+        if (["ArrowLeft", "ArrowRight", " "].includes(e.key))
+          e.preventDefault();
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") move(-1);
+        else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D")
+          move(1);
+        else if (e.key === " " || e.key === "Enter") action();
+        else if (e.key === "p" || e.key === "P") {
+          if (state === "play") state = "paused";
+          else if (state === "paused") state = "play";
+        } else if (e.key === "f" || e.key === "F") toggleFullscreen();
+      });
+
+      function toggleFullscreen() {
+        const root = document.documentElement;
+        const request = root.requestFullscreen || root.webkitRequestFullscreen;
+        if (!request) {
+          alert(
+            'Fullscreen werkt niet in deze browser.\nOp iPhone: tik op Deel → "Zet op beginscherm" en start de game van daaruit.',
+          );
+          return;
+        }
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(
+            document,
+          );
+        } else {
+          Promise.resolve(request.call(root))
+            .then(
+              () =>
+                screen.orientation &&
+                screen.orientation.lock &&
+                screen.orientation.lock("landscape"),
+            )
+            .catch(() => {});
+        }
+      }
+      document.getElementById("fs").addEventListener("click", (e) => {
+        e.currentTarget.blur();
+        toggleFullscreen();
+      });
+      for (const [id, d] of [
+        ["left", -1],
+        ["right", 1],
+      ]) {
+        document.getElementById(id).addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          audio();
+          if (state === "play") move(d);
+          else action();
+        });
+      }
+      cv.addEventListener("pointerdown", (e) => {
+        audio();
+        if (state !== "play") return action();
+        const r = cv.getBoundingClientRect();
+        move(e.clientX - r.left < r.width / 2 ? -1 : 1);
+      });
+
+      let last = performance.now();
+      function loop(now) {
+        update(Math.min(50, now - last));
+        last = now;
+        render();
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    </script>
+  </body>
 </html>

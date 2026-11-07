@@ -15,12 +15,12 @@ Een schip staat in brand en de passagiers springen overboord. Vang ze op met je 
 
 ## Besturing
 
-| Actie | Toets |
-|---|---|
-| Naar links/rechts varen | ← → of A / D |
+| Actie                    | Toets           |
+| ------------------------ | --------------- |
+| Naar links/rechts varen  | ← → of A / D    |
 | Starten / opnieuw spelen | Spatie of Enter |
-| Pauze | P |
-| Fullscreen aan/uit | F of de ⛶-knop |
+| Pauze                    | P               |
+| Fullscreen aan/uit       | F of de ⛶-knop  |
 
 Op een telefoon of tablet gebruik je de rode knoppen of tik je op de linker- of rechterkant van het scherm. Speel het liefst in **landscape**: dan staan de knoppen links en rechts van het scherm.
 
