@@ -10,6 +10,8 @@
 <title>Lifeboat</title>
 <style>
   html, body { margin: 0; height: 100%; background: #2b2b2b; font-family: "Courier New", monospace; overflow: hidden; }
+  * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+  button:focus { outline: none; }
   body { display: flex; align-items: center; justify-content: center; }
   .console { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px 12px;
              grid-template-areas: "title title fs" "screen screen screen" "left hint right";
@@ -92,19 +94,21 @@ function beep(f, d = .06, delay = 0, type = 'square', v = .04) {
 }
 
 // ---------- spel-logica ----------
-const tickMs = () => Math.max(130, 480 - saved * 6);
-const unloadMs = () => Math.max(160, 380 - saved * 2);
+// tuned with a bot playtest: a perfect player can keep going, humans top out around 100-200
+const tickMs = () => Math.max(220, 480 - saved * 1.5);
+const unloadMs = () => Math.max(140, 260 - saved);
+const FALL_STEPS = 6, APEX = 120;
 
 function popup(text, x, y, color = '#fff') { popups.push({ text, x, y, t: 0, color }); }
 
 function spawn() {
-  const maxJ = Math.min(8, 2 + Math.floor(saved / 10));
+  const maxJ = Math.min(6, 2 + Math.floor(saved / 20));
   if (jumpers.length >= maxJ) return;
   for (let a = 0; a < 6; a++) {
     const lane = Math.floor(Math.random() * 4);
     const o = ORIGINS[Math.floor(Math.random() * ORIGINS.length)];
     if (jumpers.some(j => j.state === 'stand' && j.o === o)) continue;
-    const wait = 2, steps = 3 + lane, land = tick + wait + steps;
+    const wait = 2, steps = FALL_STEPS, land = tick + wait + steps;
     // eerlijk blijven: genoeg tijd om tussen landingsplekken te varen
     if (!jumpers.every(j => Math.abs(j.land - land) >= Math.max(1, Math.abs(j.lane - lane)))) continue;
     jumpers.push({ o, lane, wait, step: 0, steps, land, state: 'stand', color: COLORS[Math.floor(Math.random() * COLORS.length)] });
@@ -140,7 +144,7 @@ function doTick() {
   if (flying) beep(420, .015, 0, 'square', .015);
   if (tick >= nextSpawn) {
     spawn();
-    nextSpawn = tick + Math.max(1, 5 - Math.floor(saved / 12)) + Math.floor(Math.random() * 3);
+    nextSpawn = tick + Math.max(2, 5 - Math.floor(saved / 30)) + Math.floor(Math.random() * 3);
   }
 }
 
@@ -328,7 +332,7 @@ function drawDrowner(d) {
 
 function jumperPos(j, frac) {
   if (j.state === 'stand') return { x: j.o.x, y: j.o.y, p: 0 };
-  const p = Math.min(1, (j.step + frac) / j.steps), tx = BOAT_X[j.lane], h = 50 + j.lane * 20;
+  const p = Math.min(1, (j.step + frac) / j.steps), tx = BOAT_X[j.lane], h = (j.o.y + SEAT) / 2 - APEX;
   return { x: j.o.x + (tx - j.o.x) * p, y: j.o.y + (SEAT - j.o.y) * p - h * 4 * p * (1 - p), p };
 }
 
@@ -345,7 +349,7 @@ function render() {
   sky.addColorStop(0, '#120c2a'); sky.addColorStop(1, '#5a2a3a');
   ctx.fillStyle = sky; ctx.fillRect(0, 0, W, SEA);
   for (const s of stars) { ctx.fillStyle = `rgba(255,255,255,${.4 + .4 * Math.sin(time / 600 + s.p)})`; circle(s.x, s.y, s.r); }
-  ctx.fillStyle = '#f5f0d0'; circle(760, 70, 22);
+  ctx.fillStyle = '#f5f0d0'; circle(620, 75, 22);
 
   const g = ctx.createRadialGradient(130, 220, 10, 130, 220, 300);
   g.addColorStop(0, `rgba(255,120,30,${.35 + Math.random() * .08})`); g.addColorStop(1, 'rgba(255,120,30,0)');
